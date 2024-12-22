@@ -4,9 +4,24 @@ A PostgreSQL client implementation based on the Model Context Protocol.
 
 ![alt text](image.png)
 
+## Tutorial Video
+For a detailed walkthrough of how to setup LM Studio, check out our tutorial videos:
+
+YouTube Tutorial:
+[![MCP PostgreSQL Client Tutorial](https://img.youtube.com/vi/jnIhW7kEb84/0.jpg)](https://www.youtube.com/watch?v=jnIhW7kEb84)
+
+Bilibili Tutorial:
+[Watch on Bilibili](https://www.bilibili.com/video/BV1X7kYYZEBi/)
+
 ## Prerequisites
 
-1. Initialize PostgreSQL Database:
+1. Install LM Studio:
+   - Download and install [LM Studio](https://lmstudio.ai/)
+   - Start the local server in LM Studio
+   - Set `AI_TYPE=lm_studio` in your .env file
+   - Make sure the local server is running before starting the application
+
+2. Initialize PostgreSQL Database:
 First, make sure you have PostgreSQL installed and running. Then create the sample database and table:
 
 ```sql
@@ -44,14 +59,14 @@ INSERT INTO book (title, author, published_date, genre, price) VALUES
 ('Don Quixote', 'Miguel de Cervantes', '1605-01-01', 'Adventure', 11.49);
 ```
 
-2. Download MCP PostgreSQL Server:
+3. Download MCP PostgreSQL Server:
 ```bash
 git clone https://github.com/modelcontextprotocol/servers.git
 cd servers
 git checkout main
 ```
 
-3. Build the PostgreSQL server:
+4. Build the PostgreSQL server:
 ```bash
 cd src/postgres
 npm install
@@ -59,7 +74,7 @@ npm run build
 ```
 The build process will create `dist/index.js` which will be used as the server entry point.
 
-4. Copy the PostgreSQL server implementation or update your environment variables to point to the built server:
+5. Copy the PostgreSQL server implementation or update your environment variables to point to the built server:
 ```bash
 # Option 1: Copy the server
 cp -r src/postgres /path/to/your/project/server
