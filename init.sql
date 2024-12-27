@@ -21,5 +21,4 @@ INSERT INTO book (title, author, published_date, genre, price) VALUES
 ('Crime and Punishment', 'Fyodor Dostoevsky', '1866-01-01', 'Crime', 13.49),
 ('The Alchemist', 'Paulo Coelho', '1988-01-01', 'Fiction', 9.49),
 ('The Lord of the Rings', 'J.R.R. Tolkien', '1954-07-29', 'Fantasy', 20.99),
-('Harry Potter and the Sorcerer''s Stone', 'J.K. Rowling', '1997-06-26', 'Fantasy', 19.99),
-('The Hunger Games', 'Suzanne Collins', '2008-09-14', 'Dystopian', 
+('Harry Potter and the Sorcerer''s Stone', 'J.K. Rowling', '1997-06-26', 'Fantasy', 19.99);
