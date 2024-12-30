@@ -8,16 +8,23 @@
     "build": "tsc",
     "dev": "node --loader ts-node/esm src/index.ts",
     "web": "node --loader ts-node/esm src/server.ts",
-    "test":"node --loader ts-node/esm src/MCPClient.ts"
+    "test": "node --loader ts-node/esm src/MCPClient.ts",
+    "test:anthropic": "node --loader ts-node/esm src/anthropicTest.ts",
+    "test:openrouter": "node --loader ts-node/esm src/openrouterTest.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.33.1",
     "@modelcontextprotocol/sdk": "^1.0.4",
     "@types/express": "^5.0.0",
+    "@types/node-fetch": "^2.6.12",
     "dotenv": "^16.3.1",
     "express": "^4.21.2",
+    "global-agent": "^3.0.0",
+    "https-proxy-agent": "^7.0.6",
+    "node-fetch": "^3.3.2",
     "openai": "^4.77.0",
     "pg": "^8.11.3",
+    "undici": "^7.2.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

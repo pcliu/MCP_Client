@@ -88,7 +88,8 @@ export class MCPClient {
         const messages: ChatCompletionMessageParam[] = [
             { role: "user", content: query }
         ];
-        let lastResult = '';
+        let lastResult = '';  // 用于存储最后的结果
+        let isTaskComplete = false;
         let stepCount = 0;
     
         // 获取可用工具列表
@@ -100,21 +101,30 @@ export class MCPClient {
         }));
     
         try {
-            while (true) {
+            while (!isTaskComplete) {
                 stepCount++;
                 console.log(`\n📝 步骤 ${stepCount}`);
                 
+                //console.log(messages);
+
                 const openaiResponse = await this.openai.chat.completions.create({
-                    //model: 'anthropic/claude-3-sonnet',
-                    //model: 'qwen/qwen-2.5-72b-instruct',
-                    //model: 'meta-llama/llama-3.1-70b-instruct',
-                    model: 'deepseek/deepseek-chat',
+                    model: 'anthropic/claude-3-sonnet',
                     messages: [
                         {
                             role: 'system',
                             content: `你是一个数据库助手。请基于用户的要求和之前的结果，决定下一步需要执行什么操作。
+                            
                             如果需要执行工具，请先用一句话说明你要做什么，然后再使用工具。
-                            如果不需要执行工具，直接返回最终结果。`
+                            如果不需要执行工具，每次响应都必须包含 JSON 格式的状态信息：
+                            {
+                                "status": "continue" | "complete",
+                                "reason": "说明原因..."
+                                "result": "返回结果..."
+                            }
+                            
+                            示例：
+                            1. 执行工具：先说明意图，再使用工具
+                            2. 不执行工具：返回 {"status": "complete", "reason": "所有查询已完成","result": "结果为..."}`
                         },
                         ...messages
                     ],
@@ -134,16 +144,22 @@ export class MCPClient {
                     throw new Error("No content in AI's response");
                 }
 
-                // 如果有工具调用
-                if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
-                    // 处理思考过程
-                    if (assistantMessage.content) {
-                        console.log('\n💭 AI 助手:', assistantMessage.content);
-                        lastResult = `思考: ${assistantMessage.content}`;
-                    }
+                let statusChecked = false;
 
+
+                // 优先处理工具调用
+                if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
                     for (const toolCall of assistantMessage.tool_calls) {
                         try {
+
+                            // 处理思考过程
+                            if (assistantMessage.content) {
+                                if (!assistantMessage.content.startsWith('{')) {
+                                    console.log('\n💭 AI 助手:', assistantMessage.content);
+                                    lastResult = `思考: ${assistantMessage.content}`;
+                                }
+                            }
+                            
                             console.log(`\n🔧 执行工具: ${toolCall.function.name}`);
                             
                             // 解析和处理参数
@@ -167,6 +183,7 @@ export class MCPClient {
                                 arguments: toolArguments
                             });
                             
+                            // 打印结果
                             console.log('📤 结果:', result.content);
                             lastResult = result.content ? JSON.stringify(result.content) : '无结果';
     
@@ -192,19 +209,60 @@ export class MCPClient {
                             });
                         }
                     }
-                } 
-                // 如果是普通文本响应，直接返回结果
+                    statusChecked = true;
+                }
+                // 处理状态响应
                 else if (assistantMessage.content) {
-                    console.log('\n✅ AI 助手:', assistantMessage.content);
-                    return assistantMessage.content;
+                    try {
+                        // 尝试解析状态 JSON
+                        const statusJson = JSON.parse(assistantMessage.content);
+                        if (statusJson.status === 'complete') {
+                            console.log('\n✅ 完成:', statusJson.result);
+                            console.log('您还有哪些需求？');
+                            lastResult = statusJson.result;
+                            isTaskComplete = true;
+                            statusChecked = true;
+                            // 如果完成了，直接返回结果
+                            return lastResult;
+                        } else if (statusJson.status === 'continue') {
+                            console.log('\n⏳ 继续:', statusJson.reason);
+                            statusChecked = true;
+                        }
+                    } catch (e) {
+                        // 如果不是 JSON，当作普通响应处理
+                        if (assistantMessage.content.trim()) {
+                            console.log('💭 AI 说:', assistantMessage.content);
+                            lastResult = assistantMessage.content;
+                        }
+                    }
+                    
+                    if (assistantMessage.content.trim()) {
+                        messages.push({
+                            role: "assistant",
+                            content: assistantMessage.content
+                        });
+                    }
+                }
+
+                // 如果没有检查到状态信息，可能需要提醒模型
+                if (!statusChecked) {
+                    messages.push({
+                        role: "user",
+                        content: "请明确指出当前任务的状态（complete/continue）"
+                    });
                 }
 
                 // 防止无限循环
                 if (stepCount > 10) {
                     console.log('\n⚠️ 步骤数超过限制，强制结束');
-                    return '由于步骤数超过限制，执行被强制结束';
+                    lastResult = '由于步骤数超过限制，执行被强制结束';
+                    isTaskComplete = true;
+                    return lastResult;
                 }
             }
+            
+            // 返回最后的结果
+            return lastResult;
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             console.error('❌ 调用 AI API 时出错:', error);
