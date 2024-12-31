@@ -88,7 +88,7 @@ export class MCPClient {
         const messages: ChatCompletionMessageParam[] = [
             { role: "user", content: query }
         ];
-        let lastResult = '';
+        
         let stepCount = 0;
     
         // 获取可用工具列表
@@ -139,7 +139,6 @@ export class MCPClient {
                     // 处理思考过程
                     if (assistantMessage.content) {
                         console.log('\n💭 AI 助手:', assistantMessage.content);
-                        lastResult = `思考: ${assistantMessage.content}`;
                     }
 
                     for (const toolCall of assistantMessage.tool_calls) {
@@ -167,8 +166,7 @@ export class MCPClient {
                                 arguments: toolArguments
                             });
                             
-                            console.log('📤 结果:', result.content);
-                            lastResult = result.content ? JSON.stringify(result.content) : '无结果';
+                            console.log('📤 结果:', result.content)
     
                             messages.push({
                                 role: "assistant",
@@ -183,8 +181,7 @@ export class MCPClient {
                         } catch (toolError: unknown) {
                             const errorMessage = toolError instanceof Error ? toolError.message : 'Unknown error';
                             console.error(`❌ 执行工具 ${toolCall.function.name} 时出错:`, errorMessage);
-                            lastResult = `执行 ${toolCall.function.name} 失败: ${errorMessage}`;
-                            
+
                             messages.push({
                                 role: "tool",
                                 tool_call_id: toolCall.id,
