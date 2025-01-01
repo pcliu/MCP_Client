@@ -6,11 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "dev": "node --loader ts-node/esm src/index.ts",
-    "web": "node --loader ts-node/esm src/server.ts",
-    "test": "node --loader ts-node/esm src/MCPClient.ts",
-    "test:anthropic": "node --loader ts-node/esm src/anthropicTest.ts",
-    "test:openrouter": "node --loader ts-node/esm src/openrouterTest.ts"
+    "dev": "node --loader ts-node/esm src/MCPClient.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.33.1",

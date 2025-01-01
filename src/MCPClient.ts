@@ -5,16 +5,10 @@ import OpenAI from 'openai';
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import * as dotenv from 'dotenv';
 import * as readline from 'readline';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 
 // 加载环境变量
 dotenv.config();
 
-// 设置代理 URL
-const proxyUrl = 'http://127.0.0.1:7897';
-
-// 创建代理 agent
-const proxyAgent = new HttpsProxyAgent(proxyUrl);
 
 export class MCPClient {
     private session: Client | null = null;
@@ -28,26 +22,17 @@ export class MCPClient {
                 'HTTP-Referer': 'http://localhost:3000',
                 'X-Title': 'MCP Client',
             },
-            //httpAgent: proxyAgent
         });
     }
 
     async connectToServer(cliServerPath?: string): Promise<void> {
         dotenv.config();
     
-        const serverPath = process.env.SQLITE_SERVER_PATH || "parent_of_servers_repo/servers/src/sqlite";
-        if (!serverPath) {
-            throw new Error("Server path not provided in SQLITE_SERVER_PATH environment variable");
-        }
-    
         const dbPath = process.env.SQLITE_DB_PATH || "~/test.db";
 
         const transport = new StdioClientTransport({
-            command: "uv",
+            command: "uvx",
             args: [
-                "--directory",
-                serverPath,
-                "run",
                 "mcp-server-sqlite",
                 "--db-path",
                 dbPath
